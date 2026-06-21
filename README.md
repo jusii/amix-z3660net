@@ -12,6 +12,26 @@ The full design + the source‑grounded scoping (protocol contract, cache‑cohe
 analysis, INT6 finding, phased plan) lives in
 [`../amix-z3660/ETHERNET-SCOPING.md`](../amix-z3660/ETHERNET-SCOPING.md).
 
+## Status — ✅ WORKS ON REAL HARDWARE (2026-06-21)
+
+AMIX has full bidirectional TCP/IP over `zen0` on a real **A4000 + Z3660**:
+`zen0` UP @ `192.168.2.39`; laptop→box flood ping **40/40, 0% loss**; box pings
+both the laptop and the gateway; `telnet`/`ftp` over `zen0` work; `netstat -in`
+shows **0 input errors, 0 output errors, 0 collisions**; sustained FTP throughput
+**~185 KiB/s** (stable across runs). GEM MAC `00:80:51:01:02:03`.
+
+The **only** real-HW blocker was an **INT6 interrupt storm**: the firmware raises
+Amiga INT6 on every received frame, but AMIX has no level-6 ethernet handler, so
+the LAN's ARP broadcasts storm the box into a hard lock. Fix = the driver writes
+`ZZ_CONFIG_DISABLE` so the firmware never raises INT6; RX is serviced by the bounded
+poll/drain callout instead (commit `b06cf45`). No firmware change was needed, and
+the optional `Z3660ETH_CACHE_FLUSH` was **not** required (the 030 data cache is
+transparent to the eth DDR windows here — left OFF).
+
+Auto-bring-up at boot = `userland/S99zen` (→ `/etc/rc2.d/S99zen`). Note: the
+bring-up can race the inet base streams on a fast clean boot — S99zen runs a bare
+`slink` first and retries `slink addaen` to make it reliable.
+
 ## Layout
 - `src/z3660eth.c` — the driver (STREAMS/DLPI skeleton adapted from the stock
   `aen`/`hydra` drivers; chip layer replaced by the Z3660 mailbox).

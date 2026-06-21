@@ -1,0 +1,30 @@
+#!/bin/sh
+# S99zen -- bring up the Z3660 native ethernet (zen0) at boot.
+#
+# Install as /etc/rc2.d/S99zen on the AMIX root.  cdevsw major for z3660eth = 48.
+#
+# The whole bring-up is BACKGROUNDED so a datapath problem can never hang the boot
+# (the box still reaches login).  On the WinUAE build box this just ENXIOs (no GEM)
+# and is harmless.
+#
+# Reliability notes (learned on real HW 2026-06-21):
+#  * `slink addaen` can race ahead of the base inet STREAMS plumbing on a fast clean
+#    boot -- the proven manual bring-up always ran a bare `slink` FIRST to (re)link
+#    the base, then `slink addaen`.  We do the same here, then retry addaen in a loop.
+#    ("Device busy" from the bare slink is expected and harmless.)
+#  * It can take the full boot (incl. fsck+reboot if the SD image is dirty) for zen0
+#    to appear -- don't conclude "broken" from an early check.
+[ -c /dev/zen0 ] || mknod /dev/zen0 c 48 0
+(
+  sleep 5
+  /usr/sbin/slink                       # ensure the base inet streams are linked
+  i=0
+  while [ $i -lt 20 ]; do
+    /usr/sbin/slink addaen /dev/zen0 zen0 && break
+    sleep 3
+    i=`expr $i + 1`
+  done
+  /usr/sbin/ifconfig zen0 192.168.2.39 netmask 255.255.255.0 up -trailers
+  /usr/sbin/route add default 192.168.2.1 1
+  /usr/sbin/ifconfig zen0
+) > /tmp/zen-bringup.log 2>&1 &
