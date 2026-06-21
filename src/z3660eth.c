@@ -255,8 +255,19 @@ int board_index;
     bzero((caddr_t)&board->z3660eth_status, sizeof(board->z3660eth_status));
     board->z3660eth_status.board_state = Z3660ETH_BOARD_RUNNING;
 
-    /* enable firmware eth interrupt generation (we poll the backlog regardless) */
-    WRLONG(info->regs, ZZ_CONFIG, ZZ_CONFIG_ENABLE);
+    /*
+     * CRITICAL: do NOT enable the firmware eth INT6 (write 0/DISABLE, not 1).
+     * AMIX has NO level-6 eth handler.  The firmware raises INT6 on every received
+     * frame (rtg.c:336, gated by interrupt_enabled_ethernet = CONFIG bit0); AMIX's
+     * p6int->aciabintr runs but never acks the eth source, so INT6 stays asserted
+     * and the level-6 interrupt STORMS -> hard-lock.  (Diagnosed on real HW
+     * 2026-06-21 from the serial [PC] heartbeat: locked in p6int/aciabintr/intret
+     * as the LAN's ARP broadcasts flooded RX.)  We POLL the backlog, and RX fills
+     * it regardless of this flag (ethernet.c only gates a debug print on it), so
+     * writing 0 keeps the full datapath AND clears any pending INT6 (rtg.c:1168-9).
+     * Interrupt-driven RX is a future board-mod / int6_tbl option (ETHERNET-SCOPING Q1).
+     */
+    WRLONG(info->regs, ZZ_CONFIG, ZZ_CONFIG_DISABLE);
 
     if (!info->poll_running) {
 	info->poll_running = 1;
