@@ -87,3 +87,20 @@ panic. That proves the whole integration + build path independent of the datapat
 Shuttle the clean `relocunix` to the real box via `transfer.hdf` (`c5d0`), stage it,
 `cd /stand; make`, reboot. Then bring the interface up at **192.168.2.39** per
 `userland/bringup.sh` and test TX → RX → ARP+ping. Never re-image the root.
+
+## Real-world build notes (validated 2026-06-21 on the WinUAE build box)
+The box is **WinUAE on Xvfb :101**, config `AmigaUnix-z3660.uae` (a2065=tap:tap0, guest **192.168.2.38**), root disk
+`Amix-z3660-work.hdf` = the build tree. Launch: `sudo /usr/local/sbin/amix-lan-up.sh` + `DISPLAY=:101 winuae -config=…`.
+Root pw = **`pass`** → `export AMIX_HOST=192.168.2.38 AMIX_USER=root AMIX_PASS=pass`.
+
+- **★ FTP asymmetry:** `amixsync.py` **push (PUT) works for 30 KB+**, but **pull (GET) is flaky >~1 KB** (the a2065
+  drops large GETs); `amixsh.py` (telnet) only returns small command output reliably. So: push the driver fine, but
+  patch `kernel.c` **on the box with `ed`** (`tools/patch-kernel.sh`, no pull) and patch the small `driver/Makefile`
+  locally + push. **NFS is the reliable channel** (host `/Amix` = `nas:/Amix`, nas=192.168.2.4; the guest mounts it
+  with `mount -F nfs 192.168.2.4:/Amix /mnt`, **nfsvers=2**) — use it to pull the clean `relocunix` and large files.
+- **★ rico.h-isms:** a STREAMS driver must spell out `unsigned char/long/short` — **NOT** `uchar`/`ulong`/`ushort`
+  (those are `rico.h`-only, which the SCSI driver includes but this one shouldn't). Don't re-declare `untimeout`
+  (it's in `systm.h`). Always **single-compile** (`cd …/z3660eth; make`) to catch compile errors before the slow gate.
+- **★ clean-gate reality:** on this (larger) kernel the D245 `ld` corruption rate is high — sum-recurrence needs many
+  builds (use `tools/build-clean-net-kernel.sh` at a high cap). **`checkunix` is NOT sufficient on its own** (it only
+  validates `.symtab`; a code/data shift passes it but breaks the kernel) — keep sum-recurrence as the accept signal.
