@@ -1,0 +1,18 @@
+# Z3660 native ethernet (zen0) -- append to /etc/inet/network-config on the real box.
+#
+# Presence-gated by `zen -S` so a board-less boot (or a degraded firmware) does not
+# stall waiting on a non-existent interface.  Edit the file in place (it is hardlinked
+# with S69inet/inetinit -- never unlink/recreate it, never leave an S* backup in rc2.d).
+#
+# ** Use a LITERAL IP, never `uname -n` ** -- on SVR4.0 the name path triggers a DNS
+# lookup that stalls boot ~180s when the resolver can't reach a server.
+#
+# The device node must exist on the on-disk root once:  mknod /dev/zen0 c 48 0
+#
+/usr/amiga/bin/zen -S && \
+    /usr/sbin/slink addaen /dev/zen0 zen0 && \
+        /usr/sbin/ifconfig zen0 192.168.2.39 netmask 255.255.255.0 up -trailers
+
+# Add to /etc/inet/hosts:
+#   192.168.2.39   amix-z3660   amix-z3660.alanara.fi
+# Default route (if not already set elsewhere): route add default 192.168.2.1 1
