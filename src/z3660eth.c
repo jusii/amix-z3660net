@@ -70,7 +70,6 @@
 extern int	autocon();
 extern caddr_t	sptalloc();
 extern int	timeout();
-extern void	untimeout();
 extern void	bcopy(), bzero();
 
 #ifndef min
@@ -118,11 +117,11 @@ static int z3660eth_number_of_boards;
 static int z3660eth_autoconfigured;
 
 /* diagnostics (read via /dev/mem on real HW, like z3660.c) */
-ulong z3660eth_board_phys, z3660eth_last_rc, z3660eth_last_off, z3660eth_machi, z3660eth_maclo;
-uchar z3660eth_present;
+unsigned long z3660eth_board_phys, z3660eth_last_rc, z3660eth_last_off, z3660eth_machi, z3660eth_maclo;
+unsigned char z3660eth_present;
 
-#define WRLONG(base,off,val) (*(volatile ulong *)((base) + (off)) = (ulong)(val))
-#define RDLONG(base,off)     (*(volatile ulong *)((base) + (off)))
+#define WRLONG(base,off,val) (*(volatile unsigned long *)((base) + (off)) = (unsigned long)(val))
+#define RDLONG(base,off)     (*(volatile unsigned long *)((base) + (off)))
 
 /* ----------------------------------------------------------------------------
  * 68030 data-cache maintenance for the shared eth DDR windows.  Line-granular
@@ -133,17 +132,17 @@ uchar z3660eth_present;
 #ifdef Z3660ETH_CACHE_FLUSH
 static void
 z3660eth_dcache(addr, len)
-volatile uchar *addr;
+volatile unsigned char *addr;
 int len;
 {
-    register uchar *p = (uchar *)((long)addr & ~15L);
-    register uchar *end = (uchar *)((long)addr + len);
+    register unsigned char *p = (unsigned char *)((long)addr & ~15L);
+    register unsigned char *end = (unsigned char *)((long)addr + len);
 
     for (; p < end; p += 16)
 	asm volatile ("cpushl %%dc,(%0)" : : "a"(p));
 }
-#define Z3660ETH_PUSH(a,l)	z3660eth_dcache((volatile uchar *)(a), (int)(l))
-#define Z3660ETH_INVAL(a,l)	z3660eth_dcache((volatile uchar *)(a), (int)(l))
+#define Z3660ETH_PUSH(a,l)	z3660eth_dcache((volatile unsigned char *)(a), (int)(l))
+#define Z3660ETH_INVAL(a,l)	z3660eth_dcache((volatile unsigned char *)(a), (int)(l))
 #else
 #define Z3660ETH_PUSH(a,l)
 #define Z3660ETH_INVAL(a,l)
@@ -162,7 +161,7 @@ int board_index;
     z3660eth_board_t *board = &z3660eth_board[board_index];
     z3660eth_info_t *info = &board->z3660eth_info;
     long base, size;
-    ulong hi, lo;
+    unsigned long hi, lo;
 
     if (info->regs)
 	return 0;
@@ -172,7 +171,7 @@ int board_index;
 	    z3660eth_present = 0;
 	    return ENXIO;
 	}
-	if ((((*(volatile ushort *)VPOSR) >> 8) & 0x7F) < 0x22) {
+	if ((((*(volatile unsigned short *)VPOSR) >> 8) & 0x7F) < 0x22) {
 	    z3660eth_present = 0;
 	    return ENXIO;		/* ECS/OCS build box -- no Z3660 here */
 	}
@@ -180,11 +179,11 @@ int board_index;
     }
 
     info->board_base = base;
-    z3660eth_board_phys = (ulong)base;
+    z3660eth_board_phys = (unsigned long)base;
 
-    info->regs = (volatile uchar *)sptalloc(ZZ_REGS_PAGES, PG_V,
+    info->regs = (volatile unsigned char *)sptalloc(ZZ_REGS_PAGES, PG_V,
 		    phystopfn((paddr_t)base), 0);
-    info->frame = (volatile uchar *)sptalloc(ZZ_FRAME_PAGES, PG_V,
+    info->frame = (volatile unsigned char *)sptalloc(ZZ_FRAME_PAGES, PG_V,
 		    phystopfn((paddr_t)base + ZZ_RXBACKLOG_OFF), 0);
     if (info->regs == 0 || info->frame == 0) {
 	info->regs = 0;
@@ -203,12 +202,12 @@ int board_index;
 	return ENXIO;
     }
 
-    info->paddress[0] = (uchar)(hi >> 8);
-    info->paddress[1] = (uchar)hi;
-    info->paddress[2] = (uchar)(lo >> 24);
-    info->paddress[3] = (uchar)(lo >> 16);
-    info->paddress[4] = (uchar)(lo >> 8);
-    info->paddress[5] = (uchar)lo;
+    info->paddress[0] = (unsigned char)(hi >> 8);
+    info->paddress[1] = (unsigned char)hi;
+    info->paddress[2] = (unsigned char)(lo >> 24);
+    info->paddress[3] = (unsigned char)(lo >> 16);
+    info->paddress[4] = (unsigned char)(lo >> 8);
+    info->paddress[5] = (unsigned char)lo;
 
     z3660eth_present = 1;
     return 0;
@@ -444,7 +443,7 @@ mblk_t *mp;
     unsigned char *ap;
     mblk_t *m;
     int s, n, pktsize;
-    ulong rc;
+    unsigned long rc;
 
     s = splz3660eth();
     if (info->tx_busy || info->regs == 0) {
@@ -515,8 +514,8 @@ int board_index;
     z3660eth_board_t *board = &z3660eth_board[board_index];
     z3660eth_info_t *info = &board->z3660eth_info;
     static unsigned char rxbuff[MAX_BUFFER_LENGTH];
-    volatile uchar *slot;
-    ulong off;
+    volatile unsigned char *slot;
+    unsigned long off;
     unsigned short serial;
     int len, loop = 0;
 

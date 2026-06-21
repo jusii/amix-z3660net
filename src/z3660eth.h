@@ -99,13 +99,20 @@ typedef struct ether_header ether_header_t;
 #define Z3660ETH_INIT_PRI	(PZERO - 1)
 
 /*
- * spl level.  RX is drained from a clock-level timeout() poll callout (the
- * default model -- AMIX has no level-6 driver hook for the firmware's INT6, see
- * ETHERNET-SCOPING.md Q1), so the base-level wput/proto/xmit critical sections
- * must block the callout: raise to spl6.  (If/when RX moves to an int2_tbl ISR
- * via a board-mod, this can drop to spl2 like aen/hydra.)
+ * Interrupt masking.  AMIX has NO spl6()/splx() primitives -- they exist in the
+ * BSD/hydra idiom this skeleton was adapted from, but NOT in AMIX SVR4.0 (the
+ * stock aen LANCE driver and z3660.c do ZERO explicit interrupt masking).  So
+ * these are no-ops: a base-level critical section would, on real HW, need to
+ * block the clock-level RX poll callout, but (a) Phase-1 never reaches the
+ * datapath -- the probe ENXIOs with no GEM present -- and (b) proper RX/callout
+ * synchronization is a real-HW (P3) concern, to be revisited when RX moves off
+ * the polled timeout() callout (e.g. onto an int2_tbl ISR via a board-mod).
+ * Referencing the nonexistent spl6/splx left them UNDEF in the kernel link,
+ * which is what the relocunix `nm -u` check rejects.  See ETHERNET-SCOPING.md
+ * Q1/Q2/Q7.
  */
-#define splz3660eth		spl6
+#define splz3660eth()		0		/* was spl6() -- nonexistent in AMIX */
+#define splx(s)			((void)(s))	/* was splx()  -- nonexistent in AMIX */
 
 #define Z3660ETH_POLL_TICKS	1	/* RX poll period (clock ticks) */
 
