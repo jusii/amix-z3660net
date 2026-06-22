@@ -58,7 +58,10 @@ z3660eth/exp :                  # <-- add this rule
 ```
 
 ## 4. Clean-gate relink (the D245 boot-breaker workaround)
-On-box `ld` corrupts ~70% of kernel links, so relink until `sum -r relocunix` recurs.
+On-box `ld` corrupts ~70% of kernel links under emulation, so relink until the kernel is
+provably clean. For this (larger) net kernel the bar is **`nm -h -u unix` empty +
+`checkunix`-clean** — `sum -r` recurrence does *not* converge at this size (the committed
+`build-clean-net-kernel.sh` predates this; prefer the `nm -u` bar — see `GRIMOIRE-HANDOFF.md` §8).
 The net-aware gate removes the right stale objects (the SCSI gate is hardcoded to
 `alien/` and will NOT rebuild a `driver/` subdir or `kernel.c`):
 ```
@@ -68,7 +71,7 @@ amixsh.py "nohup sh /tmp/build-clean-net-kernel.sh z3660eth > /tmp/bcnk.log 2>&1
 ```
 The gate force-removes `amiga/driver/z3660eth/{z3660eth.o,exp}`, `amiga/driver/exp`,
 `master.d/kernel.o`, `master.d/exp` each round (Makefiles have no header-dep tracking),
-recompiles, links, and confirms a byte-deterministic `relocunix` via `sum -r` + `checkunix`.
+recompiles, links, and confirms a clean `relocunix` via **`nm -h -u unix` (empty) + `checkunix`**.
 
 ## 5. Install + boot
 ```
