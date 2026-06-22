@@ -41,7 +41,7 @@
  * misses and open() returns ENXIO -- the compile/link/boot/register gate.
  *
  * Refs: hydra-amix aen/aen.c + hydra/hydra.c (STREAMS/DLPI skeleton),
- *       amix-z3660/src/z3660.c (Z3660 mailbox/sptalloc idiom), ETHERNET-SCOPING.md.
+ *       amix-z3660scsi/src/z3660.c (Z3660 mailbox/sptalloc idiom), ETHERNET-SCOPING.md.
  */
 #include "sys/types.h"
 #include "sys/param.h"

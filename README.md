@@ -2,7 +2,7 @@
 
 A native **Commodore Amiga Unix (AMIX, SVR4.0, m68k 68030) STREAMS/DLPI ethernet
 driver** for the **Z3660 accelerator's onboard ethernet** — the network analogue
-of the [`amix-z3660`](../amix-z3660) SCSI driver. It is **not** NIC emulation: the
+of the [`amix-z3660scsi`](../amix-z3660scsi) SCSI driver. It is **not** NIC emulation: the
 Z3660 firmware already moves whole ethernet frames between the 68k guest and the
 Zynq GEM (for AmigaOS's SANA-II `Z3660Net.device`); this driver speaks that same
 firmware mailbox and presents it to AMIX as a DLPI Style‑1 connectionless
@@ -16,7 +16,7 @@ evidence dossier in [`docs/ETHERNET-SCOPING-evidence.md`](docs/ETHERNET-SCOPING-
 ## Scope / responsibility
 
 This repo is **the AMIX ethernet driver (`z3660eth`) for the Z3660, plus its design
-docs, and nothing else.** Its siblings: SCSI driver → [`../amix-z3660`](../amix-z3660);
+docs, and nothing else.** Its siblings: SCSI driver → [`../amix-z3660scsi`](../amix-z3660scsi);
 firmware / 68k-emulator → `~/Devel/Omat/Amiga/Z3660`; build harness + golden image +
 host-ops → [`../amix-kerntools`](../amix-kerntools). Full map:
 [`../amix-kerntools/REPOS.md`](../amix-kerntools/REPOS.md).
