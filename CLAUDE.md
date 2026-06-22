@@ -31,5 +31,13 @@ Via the **obsidian-vault MCP server**, read at session start:
 `driver.conf` → kerntools `build-net-kernel.sh` (STREAMS path, `cdevsw[48]`, not `sd.c`). Follows the
 Z3660 firmware ethernet protocol one-way. `GRIMOIRE-HANDOFF.md` → grimoire via **`/amix-brief`**.
 
+## Grimoire access
+
+You may read `../grimoire-amix/` freely — especially `llms-full.txt` (the whole published corpus) —
+as your reference knowledge base; consult it before documenting Amix internals. You may **write** to
+grimoire **only** via `/amix-brief`, which drops a confidence-tagged brief into the gitignored
+`import/` (no commit). Run `/amix-brief` with no arguments to have me scan this repo for findings
+grimoire doesn't yet have and propose what to export. (Enforced by `.claude/settings.json`.)
+
 ## Commit discipline
 `Machine/Coding Standards.md`: **no AI attribution**. Identity `Jusii <jussi@alanara.fi>`.
