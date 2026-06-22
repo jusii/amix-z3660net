@@ -10,7 +10,8 @@ ethernet provider bound up by `slink` + `ifconfig`.
 
 The full design + the source‑grounded scoping (protocol contract, cache‑coherency
 analysis, INT6 finding, phased plan) lives in
-[`../amix-z3660/ETHERNET-SCOPING.md`](../amix-z3660/ETHERNET-SCOPING.md).
+[`docs/ETHERNET-SCOPING.md`](docs/ETHERNET-SCOPING.md), with the supporting
+evidence dossier in [`docs/ETHERNET-SCOPING-evidence.md`](docs/ETHERNET-SCOPING-evidence.md).
 
 ## Status — ✅ WORKS ON REAL HARDWARE (2026-06-21)
 
