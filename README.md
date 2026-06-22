@@ -13,6 +13,14 @@ analysis, INT6 finding, phased plan) lives in
 [`docs/ETHERNET-SCOPING.md`](docs/ETHERNET-SCOPING.md), with the supporting
 evidence dossier in [`docs/ETHERNET-SCOPING-evidence.md`](docs/ETHERNET-SCOPING-evidence.md).
 
+## Scope / responsibility
+
+This repo is **the AMIX ethernet driver (`z3660eth`) for the Z3660, plus its design
+docs, and nothing else.** Its siblings: SCSI driver → [`../amix-z3660`](../amix-z3660);
+firmware / 68k-emulator → `~/Devel/Omat/Amiga/Z3660`; build harness + golden image +
+host-ops → [`../amix-kerntools`](../amix-kerntools). Full map:
+[`../amix-kerntools/REPOS.md`](../amix-kerntools/REPOS.md).
+
 ## Status — ✅ WORKS ON REAL HARDWARE (2026-06-21)
 
 AMIX has full bidirectional TCP/IP over `zen0` on a real **A4000 + Z3660**:
