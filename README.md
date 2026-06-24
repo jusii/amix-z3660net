@@ -17,9 +17,12 @@ evidence dossier in [`docs/ETHERNET-SCOPING-evidence.md`](docs/ETHERNET-SCOPING-
 
 This repo is **the AMIX ethernet driver (`z3660eth`) for the Z3660, plus its design
 docs, and nothing else.** Its siblings: SCSI driver → [`../amix-z3660scsi`](../amix-z3660scsi);
-firmware / 68k-emulator → `~/Devel/Omat/Amiga/Z3660`; build harness + golden image +
-host-ops → [`../amix-kerntools`](../amix-kerntools). Full map:
-[`../amix-kerntools/REPOS.md`](../amix-kerntools/REPOS.md).
+firmware / 68k-emulator → `~/Devel/Omat/Amiga/Amix/Z3660`; build harness + golden image +
+host-ops → [`../amix-kerntools`](../amix-kerntools).
+
+Compilation and kernel integration are handled by the **`amix-kerntools`** build hub,
+which reads this repo's `driver.conf` by relative path. This repo carries only the
+driver source, its `driver.conf`, the userland bring-up, and the design docs.
 
 ## Status — ✅ WORKS ON REAL HARDWARE (2026-06-21)
 
@@ -52,7 +55,8 @@ bring-up can race the inet base streams on a fast clean boot — S99zen runs a b
 - `driver.conf` — the `net` stanza consumed by `../amix-kerntools/build-net-kernel.sh`.
 - `userland/` — `zen.c` (the `zen -S` presence tool), the `/etc/inet` config
   snippet, and the manual interface bring‑up runbook.
-- `BUILD.md` — the exact on‑box build + kernel‑integration steps.
+- `BUILD.md` — the exact on‑box build + kernel‑integration steps (the manual
+  procedure that `amix-kerntools` automates).
 
 ## How it works (one paragraph)
 Discovery mirrors `z3660.c`: `autocon(0x144B0001)`, else (AGA only) the fixed combo
@@ -66,12 +70,8 @@ by re‑reading `ZZ_ETH_RX_ADDR`, breaking on the serial sentinel, and strobing
 AMIX has no driver hook — so RX is drained from a **clock‑level `timeout()` poll
 callout** by default (`z3660ethintr()` exists for a future interrupt path).
 
-## Status
-- **Phases 0–1 authored** (this repo): source written + reviewed; build path
-  (`../amix-kerntools/build-net-kernel.sh`) prepared. The **compile/boot/ENXIO
-  gate on the WinUAE build box and the real‑HW datapath (TX, RX, ARP+ping) are
-  NOT yet run** — they require the build box up and the physical A4000+Z3660.
-- Real‑HW interface IP: **192.168.2.39** (the WinUAE build box keeps `.38`).
-- Two things to confirm on real HW (see scoping §10): the RX length/FCS boundary
-  (Q4 — a one‑frame probe) and whether the 030 data‑cache flush
-  (`Z3660ETH_CACHE_FLUSH`, off by default) is needed.
+## License
+MIT — see [`LICENSE`](LICENSE). The STREAMS/DLPI scaffolding was originally adapted
+from Commodore's stock AMIX `aen`/`hydra` drivers; the MIT grant covers this repo's
+own work. AMIX itself (SVR4.0) is proprietary — you need a licensed AMIX system and a
+Z3660 accelerator to build and run this driver.

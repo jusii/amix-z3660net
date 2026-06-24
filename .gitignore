@@ -1,2 +1,7 @@
 *.o
 exp
+
+# Local agent tooling / internal handoff — not part of the public release
+.claude/
+CLAUDE.md
+GRIMOIRE-HANDOFF.md

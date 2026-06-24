@@ -94,7 +94,7 @@ Shuttle the clean `relocunix` to the real box via `transfer.hdf` (`c5d0`), stage
 ## Real-world build notes (validated 2026-06-21 on the WinUAE build box)
 The box is **WinUAE on Xvfb :101**, config `AmigaUnix-z3660.uae` (a2065=tap:tap0, guest **192.168.2.38**), root disk
 `Amix-z3660-work.hdf` = the build tree. Launch: `sudo /usr/local/sbin/amix-lan-up.sh` + `DISPLAY=:101 winuae -config=…`.
-Root pw = **`pass`** → `export AMIX_HOST=192.168.2.38 AMIX_USER=root AMIX_PASS=pass`.
+Set `AMIX_PASS` to the build-image root password → `export AMIX_HOST=192.168.2.38 AMIX_USER=root AMIX_PASS=<pw>`.
 
 - **★ FTP asymmetry:** `amixsync.py` **push (PUT) works for 30 KB+**, but **pull (GET) is flaky >~1 KB** (the a2065
   drops large GETs); `amixsh.py` (telnet) only returns small command output reliably. So: push the driver fine, but
@@ -104,6 +104,8 @@ Root pw = **`pass`** → `export AMIX_HOST=192.168.2.38 AMIX_USER=root AMIX_PASS
 - **★ rico.h-isms:** a STREAMS driver must spell out `unsigned char/long/short` — **NOT** `uchar`/`ulong`/`ushort`
   (those are `rico.h`-only, which the SCSI driver includes but this one shouldn't). Don't re-declare `untimeout`
   (it's in `systm.h`). Always **single-compile** (`cd …/z3660eth; make`) to catch compile errors before the slow gate.
-- **★ clean-gate reality:** on this (larger) kernel the D245 `ld` corruption rate is high — sum-recurrence needs many
-  builds (use `tools/build-clean-net-kernel.sh` at a high cap). **`checkunix` is NOT sufficient on its own** (it only
-  validates `.symtab`; a code/data shift passes it but breaks the kernel) — keep sum-recurrence as the accept signal.
+- **★ clean-gate reality:** on this (larger) kernel the D245 `ld` corruption rate is high, so relink until clean. The
+  correct accept bar is **`nm -h -u unix` empty (no undefined symbols) AND `checkunix`-clean** — `sum -r` recurrence does
+  *not* converge at this kernel size and is **not** the gate here (it still works for the small SCSI kernels). `checkunix`
+  alone is insufficient (it only validates `.symtab`; a code/data shift passes it). The committed
+  `tools/build-clean-net-kernel.sh` implements the `nm -u` bar; run it at a high cap.

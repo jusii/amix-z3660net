@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Read(//home/jalanara/Devel/Omat/Amiga/Amix/**)",
-      "Write(//home/jalanara/Devel/Omat/Amiga/Amix/grimoire-amix/import/**)",
-      "Edit(//home/jalanara/Devel/Omat/Amiga/Amix/grimoire-amix/import/**)"
-    ]
-  }
-}
