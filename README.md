@@ -1,3 +1,8 @@
+> **Moved.** This project now lives in [amigaux/amix](https://github.com/amigaux/amix) as
+> [`kernel/drivers/z3660eth`](https://github.com/amigaux/amix/tree/master/kernel/drivers/z3660eth), with its
+> history and later work (see `kernel/drivers/z3660eth/docs/history-map.txt` there for the old-to-new commit
+> map). This repository is archived and no longer updated.
+
 # amix-z3660net — native AMIX ethernet driver for the Z3660
 
 A native **Commodore Amiga Unix (AMIX, SVR4.0, m68k 68030) STREAMS/DLPI ethernet
